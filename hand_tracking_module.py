@@ -12,6 +12,7 @@ class handDetector():
         self.mp_draw = mp.solutions.drawing_utils
         self.hands = self.mp_hands.Hands(self.mode, self.max_num_hands)
 
+        self.tips_ids = [4, 8, 12, 16, 20]
     def find_hands(self, frame):
         self.results = self.hands.process(frame)
 
@@ -22,29 +23,44 @@ class handDetector():
         return frame
 
     def find_position(self, frame, hand_num=0):
-        lm_list = []
+        self.lm_list = []
         if self.results.multi_hand_landmarks:
             hand_point = self.results.multi_hand_landmarks[hand_num]
 
             for id, lm in enumerate(hand_point.landmark):
                 height, width, channels = frame.shape
                 cx, cy = int(lm.x*width), int(lm.y*height)
-                lm_list.append([id, cx, cy])
-                if id == 8:
-                    cv2.circle(frame, (cx, cy), 12, (0, 0, 255), cv2.FILLED)
-        return lm_list
-def run():
-    cap = cv2.VideoCapture(0)
-    detector = handDetector()
-    while True:
-        _, frame = cap.read()
+                self.lm_list.append([id, cx, cy])
+                # if id == 8:
+                #     cv2.circle(frame, (cx, cy), 12, (0, 0, 255), cv2.FILLED)
+        return self.lm_list
 
-        if _:
-            frame = detector.find_hands(frame)
-            lm_list = detector.find_position(frame)
-            if len(lm_list) != 0:
-                print(lm_list[8])
-            cv2.imshow("Frame", frame)
-            cv2.waitKey(1)
+    def fingers_up(self):
+        fingers = []
 
-run()
+        if self.lm_list[self.tips_ids[0]][1] < self.lm_list[self.tips_ids[0] - 1][1]:
+            fingers.append(1)
+        else:
+            fingers.append(0)
+
+        for id in range(1, 5):
+            if self.lm_list[self.tips_ids[id]][2] < self.lm_list[self.tips_ids[id] - 2][2]:
+                fingers.append(1)
+            else:
+                fingers.append(0)
+        return fingers
+# def run():
+#     cap = cv2.VideoCapture(0)
+#     detector = handDetector()
+#     while True:
+#         _, frame = cap.read()
+#
+#         if _:
+#             frame = detector.find_hands(frame)
+#             lm_list = detector.find_position(frame)
+#             if len(lm_list) != 0:
+#                 print(lm_list[8])
+#             cv2.imshow("Frame", frame)
+#             cv2.waitKey(1)
+#
+# run()
