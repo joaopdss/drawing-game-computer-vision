@@ -25,26 +25,25 @@ while True:
         lm_list = hand_detector.find_position(frame)
 
         if len(lm_list) != 0:
+            xp, yp = 0, 0
             x1, y1 = lm_list[8][1:]
             x2, y2 = lm_list[12][1:]
 
             fingers = hand_detector.fingers_up()
 
             if fingers[1] and fingers[2]:
-                xp, yp = 0, 0
-
                 print("Pen & rubber selection mode")
                 if y1 < 125:
                     if x1 > 1100 and x1 < 1280:
                         draw_color = (0, 0, 0)
-                    if x1 > 950 and x1 < 1100:
+                    if x1 > 1000 and x1 < 1100:
                         draw_color = (0, 0, 255)
-                    cv2.rectangle(frame, (x1, y1 - 25), (x2, y2 + 25), draw_color, cv2.FILLED)
+                cv2.rectangle(frame, (x1, y1 - 25), (x2, y2 + 25), draw_color, cv2.FILLED)
 
             print(x1)
             if fingers[1] and not fingers[2]:
                 print("entrei")
-                cv2.circle(frame, (x1, y1), 12, (0, 0, 255), cv2.FILLED)
+                cv2.circle(frame, (x1, y1), 15, (0, 0, 255), cv2.FILLED)
                 print("Drawing mode")
                 if xp == 0 and yp == 0:
                     xp, yp = x1, y1
