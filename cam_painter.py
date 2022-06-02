@@ -6,12 +6,13 @@ import time
 
 def process_image(img, shape):
     img = cv2.resize(img, shape)
-    img = img / 255
+    img = img / 255.
     return img
 
 model = tf.keras.models.load_model("draw_model.h5")
 
-labels = ['circle', 'sun', 'cloud', 'pants', 'rainbow', 'banana']
+imgg = cv2.imread("imgs/sun.png")
+labels = ['cloud', 'church', 'sun', 'banana', 'rainbow', 'pants']
 actual_label = ""
 nn_prediction = ""
 draw_finished = False
@@ -104,8 +105,9 @@ while True:
         cv2.waitKey(1)
 
         if draw_finished and (end_time - start_time) > 5:
-            processed_img = process_image(img_canvas, (28, 28))
+            processed_img = process_image(img_inv, (28, 28))
             preds = model.predict(tf.expand_dims(processed_img, axis=0))
+            print(preds)
             num = max(preds[0])
             idx = list(preds[0]).index(num)
             nn_prediction = labels[idx]
