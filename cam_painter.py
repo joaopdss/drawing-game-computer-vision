@@ -11,8 +11,8 @@ def process_image(img, shape):
 
 model = tf.keras.models.load_model("draw_model.h5")
 
-imgg = cv2.imread("imgs/sun.png")
-labels = ['cloud', 'church', 'sun', 'banana', 'rainbow', 'pants']
+labels = ['banana', 'rainbow', 'church', 'pants', 'sun', 'pizza', 'circle', 'cloud']
+labels_copy = labels.copy()
 actual_label = ""
 nn_prediction = ""
 draw_finished = False
@@ -33,12 +33,15 @@ img_canvas = np.zeros((720, 1280, 3), np.uint8)
 first_frame = True
 start_time = time.time()
 end_time = 0
+count = 0
 while True:
+
     _, frame = cap.read()
 
     if _:
         if draw_finished or first_frame:
-            idx_label = np.random.randint(0, 6)
+            count += 1
+            idx_label = np.random.randint(0, len(labels))
             print(idx_label)
             actual_label = labels[idx_label]
 
@@ -94,6 +97,7 @@ while True:
         frame = cv2.bitwise_or(frame, img_canvas)
 
         frame[0:125, 0:1280] = header_img
+        cv2.putText(frame, f"{count}/{len(labels_copy)}", (620, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
         cv2.putText(frame, actual_label, (310, 95), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
         # print(nn_prediction)
         cv2.putText(frame, nn_prediction, (800, 105), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
@@ -110,10 +114,15 @@ while True:
             print(preds)
             num = max(preds[0])
             idx = list(preds[0]).index(num)
-            nn_prediction = labels[idx]
+            nn_prediction = labels_copy[idx]
             img_canvas = np.zeros((720, 1280, 3), np.uint8)
             print(end_time - start_time)
             start_time = time.time()
             print(nn_prediction)
+            labels.remove(actual_label)
 
+        if count == 9:
+            break
+
+    cap.release()
     end_time = time.time()
