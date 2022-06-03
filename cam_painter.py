@@ -8,7 +8,7 @@ def process_image(img, shape):
     img = cv2.resize(img, shape)
     img = img / 255.
     return img
-
+# Load model
 model = tf.keras.models.load_model("draw_model.h5")
 
 labels = ['banana', 'rainbow', 'church', 'pants', 'sun', 'pizza', 'circle', 'cloud']
@@ -34,15 +34,16 @@ first_frame = True
 start_time = time.time()
 end_time = 0
 count = 0
-while True:
 
+while True:
     _, frame = cap.read()
 
     if _:
         if draw_finished or first_frame:
             count += 1
+            
+            # Get random class to draw
             idx_label = np.random.randint(0, len(labels))
-            print(idx_label)
             actual_label = labels[idx_label]
 
             if first_frame:
@@ -61,8 +62,9 @@ while True:
 
             fingers = hand_detector.fingers_up()
 
+            # If pointer and middle fingers are up, we can select rubber, pencil or send draw to NN
             if fingers[1] and fingers[2]:
-                # print("Pen, rubber and send result selection mode")
+                
                 if y1 < 125:
                     if 1000 < x1 < 1100:
                         draw_color = (0, 0, 255)
@@ -73,11 +75,11 @@ while True:
 
 
                 cv2.rectangle(frame, (x1, y1 - 25), (x2, y2 + 25), draw_color, cv2.FILLED)
-
+            
+            # If pointer finger is up and middle finger down, can draw/erase
             if fingers[1] and not fingers[2]:
-                # print("entrei")
                 cv2.circle(frame, (x1, y1), 15, (0, 0, 255), cv2.FILLED)
-                # print("Drawing mode")
+
                 if xp == 0 and yp == 0:
                     xp, yp = x1, y1
 
@@ -97,21 +99,20 @@ while True:
         frame = cv2.bitwise_or(frame, img_canvas)
 
         frame[0:125, 0:1280] = header_img
+        # Round text
         cv2.putText(frame, f"{count}/{len(labels_copy)}", (620, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+        # Object to draw
         cv2.putText(frame, actual_label, (310, 95), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
-        # print(nn_prediction)
+        # Neural Network prediction  
         cv2.putText(frame, nn_prediction, (800, 105), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
-        # frame = cv2.addWeighted(frame, 8.5, img_canvas, 0.5, 0)
         cv2.imshow("Frame", frame)
         img_teste = cv2.resize(img_inv, (28, 28))
-        cv2.imshow("img_inv", img_teste)
-        cv2.imshow("img_invvv", img_inv)
+        cv2.imshow("Resized image", img_teste)
         cv2.waitKey(1)
 
         if draw_finished and (end_time - start_time) > 5:
             processed_img = process_image(img_inv, (28, 28))
             preds = model.predict(tf.expand_dims(processed_img, axis=0))
-            print(preds)
             num = max(preds[0])
             idx = list(preds[0]).index(num)
             nn_prediction = labels_copy[idx]
