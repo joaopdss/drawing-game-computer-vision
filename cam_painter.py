@@ -8,6 +8,7 @@ def process_image(img, shape):
     img = cv2.resize(img, shape)
     img = img / 255.
     return img
+
 # Load model
 model = tf.keras.models.load_model("draw_model.h5")
 
@@ -16,7 +17,12 @@ labels_copy = labels.copy()
 actual_label = ""
 nn_prediction = ""
 draw_finished = False
-header_img = cv2.imread("Header/header.jpg")
+first_frame = True
+draw_color = (0, 0, 255)
+xp, yp = 0, 0
+count = 0
+end_time = 0
+start_time = time.time()
 
 # Get capture and set config
 cap = cv2.VideoCapture(0)
@@ -24,16 +30,9 @@ cap.set(3, 1288)
 cap.set(4, 728)
 
 hand_detector = hand_tracking.handDetector()
-draw_color = (0, 0, 255)
 
-selection_mode = [0, 1]
-idx_selection = 0
-xp, yp = 0, 0
+header_img = cv2.imread("Header/header.jpg")
 img_canvas = np.zeros((720, 1280, 3), np.uint8)
-first_frame = True
-start_time = time.time()
-end_time = 0
-count = 0
 
 while True:
     _, frame = cap.read()
@@ -43,8 +42,8 @@ while True:
             count += 1
             
             # Get random class to draw
-            idx_label = np.random.randint(0, len(labels))
-            actual_label = labels[idx_label]
+            idx_label = np.random.randint(0, len(labels_copy))
+            actual_label = labels_copy[idx_label]
 
             if first_frame:
                 first_frame = False
@@ -100,7 +99,7 @@ while True:
 
         frame[0:125, 0:1280] = header_img
         # Round text
-        cv2.putText(frame, f"{count}/{len(labels_copy)}", (620, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+        cv2.putText(frame, f"{count}/{len(labels)}", (620, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
         # Object to draw
         cv2.putText(frame, actual_label, (310, 95), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
         # Neural Network prediction  
@@ -115,12 +114,10 @@ while True:
             preds = model.predict(tf.expand_dims(processed_img, axis=0))
             num = max(preds[0])
             idx = list(preds[0]).index(num)
-            nn_prediction = labels_copy[idx]
+            nn_prediction = labels[idx]
             img_canvas = np.zeros((720, 1280, 3), np.uint8)
-            print(end_time - start_time)
             start_time = time.time()
-            print(nn_prediction)
-            labels.remove(actual_label)
+            labels_copy.remove(actual_label)
 
         if count == 9:
             break
