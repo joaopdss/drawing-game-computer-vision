@@ -13,6 +13,7 @@ class handDetector():
         self.hands = self.mp_hands.Hands(self.mode, self.max_num_hands)
 
         self.tips_ids = [4, 8, 12, 16, 20]
+
     def find_hands(self, frame):
         self.results = self.hands.process(frame)
 
