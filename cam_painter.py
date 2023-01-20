@@ -4,7 +4,6 @@ import tensorflow as tf
 import hand_tracking_module as hand_tracking
 import time
 
-
 def process_image(img, shape):
     img = cv2.resize(img, shape)
     img = img / 255.
